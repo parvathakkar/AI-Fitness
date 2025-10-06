@@ -1,0 +1,43 @@
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: gateway
+  config:
+    import: optional:configserver:http://localhost:8888"
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/certs
+  cloud:
+    gateway:
+      routes:
+        - id: userservice
+          uri: lb://USERSERVICE
+          predicates:
+            - Path=/api/users/**
+
+        - id: activityservice
+          uri: lb://ACTIVITYSERVICE
+          predicates:
+            - Path=/api/activity/**
+
+        - id: aiservice
+          uri: lb://AISERVICE
+          predicates:
+            - Path=/api/recs/**
+
+server:
+  port: 8080
+
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+    non-secure-port: ${server.port}
+    instance-id: localhost:${spring.application.name}:${server.port}
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
